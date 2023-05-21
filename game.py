@@ -213,6 +213,14 @@ def updates(coins):
 
     textHPp100 = bigfont.render("+100", True, BLACK)
 
+    textSpeedp025 = bigfont.render("+0,25", True, BLACK)
+
+    textSpeedp050 = bigfont.render("+0,50", True, BLACK)
+
+    textSpeedp075 = bigfont.render("+0,75", True, BLACK)
+
+    textSpeedp1 = bigfont.render("+1", True, BLACK)
+
     AK47 = pygame.transform.scale(pygame.image.load(os.path.join("Assets", "AK_47.png")), (350, 100))
     Wand = pygame.transform.scale(pygame.image.load(os.path.join("Assets", "Wand.jpg")), (100, 100))
     Slingshot = pygame.transform.scale(pygame.image.load(os.path.join("Assets", "Slingshot.png")), (100, 100))
@@ -225,6 +233,10 @@ def updates(coins):
     HPp50 = False
     HPp75 = False
     HPp100 = False
+    Speedp025 = False
+    Speedp050 = False
+    Speedp075 = False
+    Speedp1 = False
 
     running = True
     while running:
@@ -245,6 +257,10 @@ def updates(coins):
         screen.blit(textHPp50, (350, 450))
         screen.blit(textHPp75, (500, 450))
         screen.blit(textHPp100, (650, 450))
+        screen.blit(textSpeedp025, (200, 600))
+        screen.blit(textSpeedp050, (350, 600))
+        screen.blit(textSpeedp075, (500, 600))
+        screen.blit(textSpeedp1, (650, 600))
 
         #Showing the bought items
         if Slingshotbought == True:
@@ -264,6 +280,15 @@ def updates(coins):
                     screen.blit(textBought, (500, 425))
                     if HPp100 == True:
                         screen.blit(textBought, (650, 425))
+        
+        if Speedp025 == True:
+           screen.blit(textBought, (200, 575))
+           if Speedp050 == True:
+               screen.blit(textBought, (350, 575))
+               if Speedp075 == True:
+                   screen.blit(textBought, (500, 575))
+                   if Speedp1 == True:
+                       screen.blit(textBought, (650, 575))
 
         mouse = pygame.mouse.get_pos()
 
@@ -271,7 +296,6 @@ def updates(coins):
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     running = False
-                    pygame.quit()
             elif event.type == QUIT:
                 running = False
 
@@ -299,14 +323,117 @@ def updates(coins):
                     if 650 <= mouse[0] <= 720 and 450 <= mouse[1] <= 520 and coins >= 10000 and HPp75 == True:
                         coins = coins - 10000
                         HPp100 = True
+                    #Buying speed
+                    if 200 <= mouse[0] <= 320 and 600 <= mouse[1] <= 670 and coins >= 1000:
+                        coins = coins - 1000
+                        Speedp025 = True
+                    if 350 <= mouse[0] <= 470 and 600 <= mouse[1] <= 670 and coins >= 2000 and Speedp025 == True:
+                        coins = coins - 2000
+                        Speedp050 = True
+                    if 500 <= mouse[0] <= 620 and 600 <= mouse[1] <=670 and coins >= 5000 and Speedp050 == True:
+                        coins = coins - 5000
+                        Speedp075 = True
+                    if 650 <= mouse[0] <= 720 and 600 <= mouse[1] <=670 and coins >= 10000 and Speedp075 == True:
+                        coins = coins - 10000
+                        Speedp1 = True
                     if SCREEN_WIDTH / 2 - 140 + 50 <= mouse[0] <= SCREEN_WIDTH / 2 + 50 and SCREEN_HEIGHT - 60 <= mouse[1] <= SCREEN_HEIGHT - 60 + 40:
+                        running = False
                         menu()
             
 
         pygame.display.update()
 
 
-def menu():
+def readFile():
+    exists = os.path.isfile("Progress.txt")
+    if exists == True:
+        with open("Progress.txt", "r") as file:
+            coins = file.readline().split(" ")[2].replace("\n", "")
+            AK47bought = file.readline().split(" ")[2].replace("\n", "")
+            Wandbought = file.readline().split(" ")[2].replace("\n", "")
+            Bazookabought = file.readline().split(" ")[2].replace("\n", "")
+            HPp25 = file.readline().split(" ")[2].replace("\n", "")
+            HPp50 = file.readline().split(" ")[2].replace("\n", "")
+            HPp75 = file.readline().split(" ")[2].replace("\n", "")
+            HPp100 = file.readline().split(" ")[2].replace("\n", "")
+            Speedp025 = file.readline().split(" ")[2].replace("\n", "")
+            Speedp050 = file.readline().split(" ")[2].replace("\n", "")
+            Speedp075 = file.readline().split(" ")[2].replace("\n", "")
+            Speedp1 = file.readline().split(" ")[2].replace("\n", "")
+            coins = int(coins)
+            #Making the guns variables bools
+            if AK47bought == "True":
+                AK47bought = True
+            else:
+                AK47bought = False    
+            if Wandbought == "True":
+                Wandbought = True
+            else:
+                Wandbought = False    
+            if Bazookabought == "True":
+                Bazookabought = True
+            else:
+                Bazookabought = False
+                
+            #Making the HP variables bools
+            if HPp25 == "True":
+                HPp25 = True
+            else:
+                HPp25 = False    
+            if HPp50 == "True":
+                HPp50 = True
+            else:
+                    HPp50 = False    
+            if HPp75 == "True":
+                HPp75 = True
+            else:
+                HPp75 = False    
+            if HPp100 == "True":
+                HPp100 = True
+            else:
+                HPp100 = False
+                
+            #Making the speed variables bools
+            if Speedp025 == "True":
+                Speedp025 = True
+            else:
+                Speedp025 = False    
+            if Speedp050 == "True":
+                Speedp050 = True
+            else:
+                Speedp050 = False    
+            if Speedp075 == "True":
+                Speedp075 = True
+            else:
+                Speedp075 = False    
+            if Speedp1 == "True":
+                Speedp1 = True
+            else:
+                Speedp1 == False    
+
+        return coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp100, Speedp025, Speedp050, Speedp075, Speedp1
+    else:
+        with open("Progress.txt", "w"):
+            exists = True
+
+
+def writeFile(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp100, Speedp025, Speedp050, Speedp075, Speedp1):
+    with open("Progress.txt", "w") as file:
+        file.write(f"Coins = {coins}\n")
+        file.write(f"AK47bought = {AK47bought}\n")
+        file.write(f"Wandbought = {Wandbought}\n")
+        file.write(f"Bazookabought = {Bazookabought}\n")
+        file.write(f"HPp25 = {HPp25}\n")
+        file.write(f"HPp50 = {HPp50}\n")
+        file.write(f"HPp75 = {HPp75}\n")
+        file.write(f"HPp100 = {HPp100}\n")
+        file.write(f"Speedp025 = {Speedp025}\n")
+        file.write(f"Speedp50 = {Speedp050}\n")
+        file.write(f"Speedp075 = {Speedp075}\n")
+        file.write(f"Speedp1 = {Speedp1}")
+
+
+def menu(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp100, Speedp025, Speedp050, Speedp075, Speedp1):
     pygame.init()
 
     screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
@@ -341,30 +468,20 @@ def menu():
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     running = False
-                    pygame.quit()
             elif event.type == QUIT:
                 running = False
-                pygame.quit()
 
             if event.type == MOUSEBUTTONDOWN:
                 if SCREEN_WIDTH / 2 - 140 + 50 <= mouse[0] <= SCREEN_WIDTH / 2 + 50 and SCREEN_HEIGHT / 2 + 50 <= mouse[1] <= SCREEN_HEIGHT / 2 + 40 + 50: 
                     running = False
-                if SCREEN_WIDTH / 2 - 140 + 50 <= mouse[0] <= SCREEN_WIDTH / 2 + 50 and SCREEN_HEIGHT / 2 <= mouse[1] <= SCREEN_HEIGHT / 2 + 40: 
-                    updates(10000)
-                if SCREEN_WIDTH / 2 - 140 + 50 <= mouse[0] <= SCREEN_WIDTH / 2 + 50 and SCREEN_HEIGHT / 2 - 50 <= mouse[1] <= SCREEN_HEIGHT / 2 + 40 - 50: 
+                if SCREEN_WIDTH / 2 - 140 + 50 <= mouse[0] <= SCREEN_WIDTH / 2 + 50 and SCREEN_HEIGHT / 2 <= mouse[1] <= SCREEN_HEIGHT / 2 + 40:
+                    running = False
+                    updates(100000)
+                if SCREEN_WIDTH / 2 - 140 + 50 <= mouse[0] <= SCREEN_WIDTH / 2 + 50 and SCREEN_HEIGHT / 2 - 50 <= mouse[1] <= SCREEN_HEIGHT / 2 + 40 - 50:
+                    running = False
                     game(0, 0)
 
 
         pygame.display.update()
 
-
-def readFile():
-    exists = os.path.isfile("Pregress.txt")
-    if exists == True:
-        with open("Progress.txt", "r") as progress:
-            exists = True
-    else:
-        with open("Progress.txt", "w"):
-            exists = True
-
-menu()
+menu(readFile())
