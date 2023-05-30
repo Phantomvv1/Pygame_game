@@ -1,6 +1,7 @@
+from typing import Any
 import pygame
 import os
-import random
+import time
 
 from pygame.locals import (
     K_w,
@@ -27,20 +28,28 @@ BROWN = (160, 82, 45)
 
 FPS = 60
 
-def game(bulletType, bulletDamage):
+def game(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp100, Speedp025, Speedp050, Speedp075, Speedp1):
     # Variables
-    bulletType = bulletType
-    bulletDamage = bulletDamage
+    enemiesKilled = 0
+    startSpawn = True
+    timePassed = 0
     # Functions
 
     # Drawin on the screen
 
 
     def drawOnScreeN():
+        nonlocal startSpawn
         screen.fill(BROWN)
         screen.blit(player.image, (player.x, player.y))
-        for bullet in bullets:
-            screen.blit(bullet.image, (bullet.x, bullet.y))
+        if enemiesKilled > 0 and enemiesKilled % 4 == 0 or startSpawn == True:
+            startSpawn = False
+            enemies.append(Enemy(1, SCREEN_HEIGHT / 2))
+            enemies.append(Enemy(SCREEN_WIDTH - 101, SCREEN_HEIGHT / 2))
+            enemies.append(Enemy(SCREEN_WIDTH / 2, 1))
+            enemies.append(Enemy(SCREEN_WIDTH / 2, SCREEN_HEIGHT - 101))
+        for enemy in enemies:
+            screen.blit(enemy.image, (enemy.x, enemy.y))
         pygame.display.update()
 
     # Classes
@@ -52,12 +61,30 @@ def game(bulletType, bulletDamage):
             self.image = pygame.transform.scale(pygame.image.load(
                 os.path.join("Assets", "player.png")), (100, 100))
             self.rect = self.image.get_rect()
-            self.HP = 100
+            if HPp25 == False:
+                self.HP = 100
+            if HPp25 == True and HPp50 == False:
+                self.HP = 125
+            if HPp50 == True and HPp75 == False:
+                self.HP = 150
+            if HPp75 == True and HPp100 == False:
+                self.HP = 175
+            if HPp100 == True:
+                self.HP = 200
             self.rect.width = 100
             self.rect.height = 100
             self.x = SCREEN_WIDTH / 2 - self.rect.width
             self.y = SCREEN_HEIGHT / 2 - self.rect.height
-            self.vel = 4
+            if Speedp025 == False:
+                self.vel = 4
+            if Speedp025 == True and Speedp050 == False:
+                self.vel = 4.25
+            if Speedp050 == True and Speedp075 == False:
+                self.vel = 4.5
+            if Speedp075 == True and Speedp1 == False:
+                self.vel = 4.75
+            if Speedp1 == True:
+                self.vel = 5
             self.invincible = False
             
 
@@ -87,10 +114,9 @@ def game(bulletType, bulletDamage):
                     for bullet in bullets:
                         if bullet.x < SCREEN_WIDTH and bullet.x > 0:
                             bullet.x = bullet.x + 1
+                            screen.blit(bullet.image, (bullet.x, bullet.y))
                         else:
                             bullets.pop(bullets.index(bullet))
-                else:
-                    bullets.pop(bullets.index(bullet))
             
             if pressed_keys[K_LEFT]:
                 bullets.append(Bullet(self.x, self.y))
@@ -98,10 +124,9 @@ def game(bulletType, bulletDamage):
                     for bullet in bullets:
                         if bullet.x < SCREEN_WIDTH and bullet.x > 0:
                             bullet.x = bullet.x - 1
+                            screen.blit(bullet.image, (bullet.x, bullet.y))
                         else:
                             bullets.pop(bullets.index(bullet))
-                else:
-                    bullets.pop(bullets.index(bullet))
             
             if pressed_keys[K_UP]:
                 bullets.append(Bullet(self.x, self.y))
@@ -109,10 +134,9 @@ def game(bulletType, bulletDamage):
                     for bullet in bullets:
                         if bullet.y < SCREEN_HEIGHT and bullet.y > 0:
                             bullet.y = bullet.y - 1
+                            screen.blit(bullet.image, (bullet.x, bullet.y))
                         else:
                             bullets.pop(bullets.index(bullet))
-                else:
-                    bullets.pop(bullets.index(bullet))
 
             if pressed_keys[K_DOWN]:
                 bullets.append(Bullet(self.x, self.y))
@@ -120,47 +144,89 @@ def game(bulletType, bulletDamage):
                     for bullet in bullets:
                         if bullet.y < SCREEN_HEIGHT and bullet.y > 0:
                             bullet.y = bullet.y + 1
+                            screen.blit(bullet.image, (bullet.x, bullet.y))
                         else:
                             bullets.pop(bullets.index(bullet))
-                else:
-                    bullets.pop(bullets.index(bullet))
 
 
     class Enemy(pygame.sprite.Sprite):
-        def __init__(self):
+        def __init__(self, x, y):
             super(Enemy, self).__init__()
-            self.surf = pygame.Surface((50, 50))
-            self.image
+            self.surf = pygame.Surface((100, 100))
+            self.image = pygame.transform.scale(pygame.image.load(os.path.join("Assets", "Enemy.png")), (100, 100))
             self.rect = self.image.get_rect()
             self.HP = 100
             self.rect.width = 100
             self.rect.height = 100
-            self.x
-            self.y
+            self.x = x
+            self.y = y
+            self.vel = 3
+
+        def update(self, player):
+            if self.x <= 0:
+                self.x = 0
+            if self.x >= SCREEN_WIDTH - self.rect.width:
+                self.x = SCREEN_WIDTH - self.rect.width
+            if self.y <= 0:
+                self.y = 0
+            if self.y >= SCREEN_HEIGHT - self.rect.height:
+                self.y = SCREEN_HEIGHT - self.rect.height
+
+            if player.x < self.x and self.x > player.x + 75:
+                self.x = self.x - self.vel
+            if player.x > self.x and self.x < player.x + 75:
+                self.x = self.x + self.vel
+            if player.y > self.y and self.y < player.y + 75:
+                self.y = self.y + self.vel
+            if player.y < self.y and self.y > player.y + 75:
+                self.y = self.y - self.vel
+
+            #Checking if the enemy has touched the player
+            nonlocal timePassed
+            if player.x <= self.x <= player.x + 90 and player.y <= self.y <= player.y + 90 and player.invincible == False:
+                timePassed = time.time()
+                player.invincible = True
+                player.HP = player.HP - 25
+            if timePassed + 1 <= time.time():
+                player.invincible = False
 
 
     class Bullet(pygame.sprite.Sprite):
         def __init__(self, x, y):
             super(Bullet, self).__init__()
-            self.image = pygame.transform.scale(pygame.image.load(os.path.join("Assets", "Rock.png")), (50, 50))
-            self.rect = self.image.get_rect()
-            self.type = bulletType
-            self.damage = bulletDamage
+            if AK47bought == False:
+                self.image = pygame.transform.scale(pygame.image.load(os.path.join("Assets", "Rock.png")), (50, 50))
+                self.rect = self.image.get_rect()
+                self.damage = 35
+            if AK47bought == True and Wandbought == False:
+                self.image = pygame.transform.scale(pygame.image.load(os.path.join("Assets", "Bullet.png")), (50, 50))
+                self.rect = self.image.get_rect()
+                self.damage = 50
+            if Wandbought == True and Bazookabought == False:
+                self.image = pygame.transform.scale(pygame.image.load(os.path.join("Assets", "Wand_bullet.png")), (50, 50))
+                self.rect = self.image.get_rect()
+                self.damage = 75
+            if Bazookabought == True:
+                self.image = pygame.transform.scale(pygame.image.load(os.path.join("Assets", "Rocket.png")), (50, 50))
+                self.rect = self.image.get_rect()
+                self.damage = 100
             self.vel = 20
             self.x = x
             self.y = y
-        
+            
 
     # Main programing
     pygame.init()
 
     bullets = []
 
+    enemies = []
+
     player = Player()
 
     screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 
-    pygame.display.set_caption("Game")
+    pygame.display.set_caption("Bullet Bonanza")
 
     clock = pygame.time.Clock()
     running = True
@@ -170,17 +236,27 @@ def game(bulletType, bulletDamage):
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     running = False
+                    coins = coins + 20 * enemiesKilled
+                    menu(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp100, Speedp025, Speedp050, Speedp075, Speedp1)
             elif event.type == QUIT:
                 running = False
 
-        drawOnScreeN()
+        if player.HP <= 0:
+            running = False
+            coins = coins + 20 * enemiesKilled
+            menu(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp100, Speedp025, Speedp050, Speedp075, Speedp1)
 
+        drawOnScreeN()
+        
         pressed_keys = pygame.key.get_pressed()
 
         player.update(pressed_keys)
 
+        for enemy in enemies:
+            enemy.update(player)
 
-def updates(coins):
+
+def updates(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp100, Speedp025, Speedp050, Speedp075, Speedp1):
     pygame.init()
 
     screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
@@ -221,6 +297,15 @@ def updates(coins):
 
     textSpeedp1 = bigfont.render("+1", True, BLACK)
 
+    textNote1 = smallfont.render("Note that the Health and Speed values are added", True, BLACK)
+    textNote2 = smallfont.render("to the original value of the parameter", True, BLACK)
+
+    textPrice1 = smallfont.render("The prices of the items are as it follows:", True, BLACK)
+    textPrice2 = smallfont.render("first item: 1000 coins", True, BLACK)
+    textPrice3 = smallfont.render("second item: 2000 coins", True, BLACK)
+    textPrice4 = smallfont.render("third item: 5000coins", True, BLACK)
+    textPrice5 = smallfont.render("fourth item: 10000 coins", True, BLACK)
+
     AK47 = pygame.transform.scale(pygame.image.load(os.path.join("Assets", "AK_47.png")), (350, 100))
     Wand = pygame.transform.scale(pygame.image.load(os.path.join("Assets", "Wand.jpg")), (100, 100))
     Slingshot = pygame.transform.scale(pygame.image.load(os.path.join("Assets", "Slingshot.png")), (100, 100))
@@ -238,6 +323,7 @@ def updates(coins):
     Speedp075 = False
     Speedp1 = False
 
+    pygame.display.set_caption("Bullet Bonanza")
     running = True
     while running:
         clock.tick(FPS)
@@ -261,6 +347,13 @@ def updates(coins):
         screen.blit(textSpeedp050, (350, 600))
         screen.blit(textSpeedp075, (500, 600))
         screen.blit(textSpeedp1, (650, 600))
+        screen.blit(textNote1, (1200, 400))
+        screen.blit(textNote2, (1200, 430))
+        screen.blit(textPrice1, (1200, 550))
+        screen.blit(textPrice2, (1200, 580))
+        screen.blit(textPrice3, (1200, 610))
+        screen.blit(textPrice4, (1200, 640))
+        screen.blit(textPrice5, (1200, 670))
 
         #Showing the bought items
         if Slingshotbought == True:
@@ -338,8 +431,77 @@ def updates(coins):
                         Speedp1 = True
                     if SCREEN_WIDTH / 2 - 140 + 50 <= mouse[0] <= SCREEN_WIDTH / 2 + 50 and SCREEN_HEIGHT - 60 <= mouse[1] <= SCREEN_HEIGHT - 60 + 40:
                         running = False
-                        menu()
+                        menu(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp100, Speedp025, Speedp050, Speedp075, Speedp1)
             
+
+        pygame.display.update()
+
+
+def writeFile(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp100, Speedp025, Speedp050, Speedp075, Speedp1):
+    with open("Progress.txt", "w") as file:
+        file.write(f"Coins = {coins}\n")
+        file.write(f"AK47bought = {AK47bought}\n")
+        file.write(f"Wandbought = {Wandbought}\n")
+        file.write(f"Bazookabought = {Bazookabought}\n")
+        file.write(f"HPp25 = {HPp25}\n")
+        file.write(f"HPp50 = {HPp50}\n")
+        file.write(f"HPp75 = {HPp75}\n")
+        file.write(f"HPp100 = {HPp100}\n")
+        file.write(f"Speedp025 = {Speedp025}\n")
+        file.write(f"Speedp50 = {Speedp050}\n")
+        file.write(f"Speedp075 = {Speedp075}\n")
+        file.write(f"Speedp1 = {Speedp1}\n")
+
+
+def menu(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp100, Speedp025, Speedp050, Speedp075, Speedp1):
+    pygame.init()
+
+    screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+
+    clock = pygame.time.Clock()
+
+    smallfont = pygame.font.SysFont(None, 35) 
+
+    textQuit = smallfont.render("Quit", True, WHITE)
+
+    textTitle = smallfont.render("Bullet Bonanza", True, BLACK)
+
+    textUpgrades = smallfont.render("Updates", True, WHITE)
+
+    textPlay = smallfont.render("Play", True, WHITE)
+
+    pygame.display.set_caption("Bullet Bonanza")
+    running = True
+    while running:
+        clock.tick(FPS)
+        screen.fill(CYAN)
+        pygame.draw.rect(screen, BLACK, [SCREEN_WIDTH / 2 - 140 + 50, SCREEN_HEIGHT / 2 + 50, 140, 40])
+        pygame.draw.rect(screen, BLACK, [SCREEN_WIDTH / 2 - 140 + 50, SCREEN_HEIGHT / 2, 140, 40])
+        pygame.draw.rect(screen, BLACK, [SCREEN_WIDTH / 2 - 140 + 50, SCREEN_HEIGHT / 2 - 50, 140, 40])
+        screen.blit(textQuit, (SCREEN_WIDTH / 2 - 140 + 40 + 50, SCREEN_HEIGHT / 2 + 60))
+        screen.blit(textUpgrades, (SCREEN_WIDTH / 2 - 140 + 40 + 30, SCREEN_HEIGHT / 2 + 10))
+        screen.blit(textPlay, (SCREEN_WIDTH / 2 - 140 + 40 + 55, SCREEN_HEIGHT / 2 - 60 + 20))
+        screen.blit(textTitle,(SCREEN_WIDTH / 2 - 100, 100))
+
+        mouse = pygame.mouse.get_pos()
+
+        for event in pygame.event.get(): 
+            if event.type == KEYDOWN:
+                if event.key == K_ESCAPE:
+                    running = False
+            elif event.type == QUIT:
+                running = False
+
+            if event.type == MOUSEBUTTONDOWN:
+                if SCREEN_WIDTH / 2 - 140 + 50 <= mouse[0] <= SCREEN_WIDTH / 2 + 50 and SCREEN_HEIGHT / 2 + 50 <= mouse[1] <= SCREEN_HEIGHT / 2 + 40 + 50: 
+                    running = False
+                if SCREEN_WIDTH / 2 - 140 + 50 <= mouse[0] <= SCREEN_WIDTH / 2 + 50 and SCREEN_HEIGHT / 2 <= mouse[1] <= SCREEN_HEIGHT / 2 + 40:
+                    running = False
+                    updates(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp100, Speedp025, Speedp050, Speedp075, Speedp1)
+                if SCREEN_WIDTH / 2 - 140 + 50 <= mouse[0] <= SCREEN_WIDTH / 2 + 50 and SCREEN_HEIGHT / 2 - 50 <= mouse[1] <= SCREEN_HEIGHT / 2 + 40 - 50:
+                    running = False
+                    game(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp100, Speedp025, Speedp050, Speedp075, Speedp1)
+
 
         pygame.display.update()
 
@@ -411,77 +573,10 @@ def readFile():
             else:
                 Speedp1 == False    
 
-        return coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp100, Speedp025, Speedp050, Speedp075, Speedp1
+        menu(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp100, Speedp025, Speedp050, Speedp075, Speedp1)
     else:
-        with open("Progress.txt", "w"):
-            exists = True
+        writeFile(0 ,False, False, False, False, False, False, False, False, False, False, False)
+        readFile()
 
 
-def writeFile(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp100, Speedp025, Speedp050, Speedp075, Speedp1):
-    with open("Progress.txt", "w") as file:
-        file.write(f"Coins = {coins}\n")
-        file.write(f"AK47bought = {AK47bought}\n")
-        file.write(f"Wandbought = {Wandbought}\n")
-        file.write(f"Bazookabought = {Bazookabought}\n")
-        file.write(f"HPp25 = {HPp25}\n")
-        file.write(f"HPp50 = {HPp50}\n")
-        file.write(f"HPp75 = {HPp75}\n")
-        file.write(f"HPp100 = {HPp100}\n")
-        file.write(f"Speedp025 = {Speedp025}\n")
-        file.write(f"Speedp50 = {Speedp050}\n")
-        file.write(f"Speedp075 = {Speedp075}\n")
-        file.write(f"Speedp1 = {Speedp1}")
-
-
-def menu(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp100, Speedp025, Speedp050, Speedp075, Speedp1):
-    pygame.init()
-
-    screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-
-    clock = pygame.time.Clock()
-
-    smallfont = pygame.font.SysFont(None, 35) 
-
-    textQuit = smallfont.render("Quit", True, WHITE)
-
-    textTitle = smallfont.render("Bullet Bonanza", True, BLACK)
-
-    textUpgrades = smallfont.render("Updates", True, WHITE)
-
-    textPlay = smallfont.render("Play", True, WHITE)
-
-    running = True
-    while running:
-        clock.tick(FPS)
-        screen.fill(CYAN)
-        pygame.draw.rect(screen, BLACK, [SCREEN_WIDTH / 2 - 140 + 50, SCREEN_HEIGHT / 2 + 50, 140, 40])
-        pygame.draw.rect(screen, BLACK, [SCREEN_WIDTH / 2 - 140 + 50, SCREEN_HEIGHT / 2, 140, 40])
-        pygame.draw.rect(screen, BLACK, [SCREEN_WIDTH / 2 - 140 + 50, SCREEN_HEIGHT / 2 - 50, 140, 40])
-        screen.blit(textQuit, (SCREEN_WIDTH / 2 - 140 + 40 + 50, SCREEN_HEIGHT / 2 + 60))
-        screen.blit(textUpgrades, (SCREEN_WIDTH / 2 - 140 + 40 + 30, SCREEN_HEIGHT / 2 + 10))
-        screen.blit(textPlay, (SCREEN_WIDTH / 2 - 140 + 40 + 55, SCREEN_HEIGHT / 2 - 60 + 20))
-        screen.blit(textTitle,(SCREEN_WIDTH / 2 - 100, 100))
-
-        mouse = pygame.mouse.get_pos()
-
-        for event in pygame.event.get(): 
-            if event.type == KEYDOWN:
-                if event.key == K_ESCAPE:
-                    running = False
-            elif event.type == QUIT:
-                running = False
-
-            if event.type == MOUSEBUTTONDOWN:
-                if SCREEN_WIDTH / 2 - 140 + 50 <= mouse[0] <= SCREEN_WIDTH / 2 + 50 and SCREEN_HEIGHT / 2 + 50 <= mouse[1] <= SCREEN_HEIGHT / 2 + 40 + 50: 
-                    running = False
-                if SCREEN_WIDTH / 2 - 140 + 50 <= mouse[0] <= SCREEN_WIDTH / 2 + 50 and SCREEN_HEIGHT / 2 <= mouse[1] <= SCREEN_HEIGHT / 2 + 40:
-                    running = False
-                    updates(100000)
-                if SCREEN_WIDTH / 2 - 140 + 50 <= mouse[0] <= SCREEN_WIDTH / 2 + 50 and SCREEN_HEIGHT / 2 - 50 <= mouse[1] <= SCREEN_HEIGHT / 2 + 40 - 50:
-                    running = False
-                    game(0, 0)
-
-
-        pygame.display.update()
-
-menu(readFile())
+readFile()
