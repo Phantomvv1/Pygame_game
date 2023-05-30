@@ -25,6 +25,8 @@ BLACK = (0, 0, 0)
 CYAN = (0, 255, 255)
 GREY = (128, 128 , 128)
 BROWN = (160, 82, 45)
+GREEN = (124, 252, 0)
+RED = (255, 0, 0)
 
 FPS = 60
 
@@ -33,6 +35,7 @@ def game(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp1
     enemiesKilled = 0
     startSpawn = True
     timePassed = 0
+    smallfont = pygame.font.SysFont(None, 35)
     # Functions
 
     # Drawin on the screen
@@ -50,7 +53,40 @@ def game(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp1
             enemies.append(Enemy(SCREEN_WIDTH / 2, SCREEN_HEIGHT - 101))
         for enemy in enemies:
             screen.blit(enemy.image, (enemy.x, enemy.y))
+        if HPp25 == False:
+            pygame.draw.rect(screen, RED, [20, 10, 200, 30])
+            if player.HP == 200:
+                pygame.draw.rect(screen, GREEN, [20, 10, 200, 30])
+            if player.HP == 175:
+                pygame.draw.rect(screen, GREEN, [20, 10, 200, 30])
+            if player.HP == 150:
+                pygame.draw.rect(screen, GREEN, [20, 10, 200, 30])
+            if player.HP == 125:
+                pygame.draw.rect(screen, GREEN, [20, 10, 200, 30])
+            if player.HP == 100:
+                pygame.draw.rect(screen, GREEN, [20, 10, 200, 30])
+            if player.HP == 75:
+                pygame.draw.rect(screen, GREEN, [20, 10, 150, 30])
+            if player.HP == 50:
+                pygame.draw.rect(screen, GREEN, [20, 10, 100, 30])
+            if player.HP == 25:
+                pygame.draw.rect(screen, GREEN, [20, 10, 50, 30])
+            screen.blit(textHP, (100 - 5, 15))
         pygame.display.update()
+
+    def workingWithBullets(player, pressed_keys, enemies):
+        if pressed_keys[K_RIGHT]:
+            bullets.append(Bullet(player.x, player.y))
+        if pressed_keys[K_LEFT]:
+            bullets.append(Bullet(player.x, player.y))
+        if pressed_keys[K_UP]:
+            bullets.append(Bullet(player.x, player.y))
+        if pressed_keys[K_DOWN]:
+            bullets.append(Bullet(player.x, player.y))
+        for bullet in bullets:
+            bullet.update(pressed_keys, enemies)
+        
+        
 
     # Classes
 
@@ -107,47 +143,6 @@ def game(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp1
             if self.y >= SCREEN_HEIGHT - self.rect.height:
                 self.y = SCREEN_HEIGHT - self.rect.height
 
-            # Bullets
-            if pressed_keys[K_RIGHT]:
-                bullets.append(Bullet(self.x, self.y))
-                if len(bullets) < 5 and len(bullets) > 0:
-                    for bullet in bullets:
-                        if bullet.x < SCREEN_WIDTH and bullet.x > 0:
-                            bullet.x = bullet.x + 1
-                            screen.blit(bullet.image, (bullet.x, bullet.y))
-                        else:
-                            bullets.pop(bullets.index(bullet))
-            
-            if pressed_keys[K_LEFT]:
-                bullets.append(Bullet(self.x, self.y))
-                if len(bullets) < 5 and len(bullets) > 0:
-                    for bullet in bullets:
-                        if bullet.x < SCREEN_WIDTH and bullet.x > 0:
-                            bullet.x = bullet.x - 1
-                            screen.blit(bullet.image, (bullet.x, bullet.y))
-                        else:
-                            bullets.pop(bullets.index(bullet))
-            
-            if pressed_keys[K_UP]:
-                bullets.append(Bullet(self.x, self.y))
-                if len(bullets) < 5 and len(bullets) > 0: 
-                    for bullet in bullets:
-                        if bullet.y < SCREEN_HEIGHT and bullet.y > 0:
-                            bullet.y = bullet.y - 1
-                            screen.blit(bullet.image, (bullet.x, bullet.y))
-                        else:
-                            bullets.pop(bullets.index(bullet))
-
-            if pressed_keys[K_DOWN]:
-                bullets.append(Bullet(self.x, self.y))
-                if len(bullets) < 5 and len(bullets) > 0:
-                    for bullet in bullets:
-                        if bullet.y < SCREEN_HEIGHT and bullet.y > 0:
-                            bullet.y = bullet.y + 1
-                            screen.blit(bullet.image, (bullet.x, bullet.y))
-                        else:
-                            bullets.pop(bullets.index(bullet))
-
 
     class Enemy(pygame.sprite.Sprite):
         def __init__(self, x, y):
@@ -172,18 +167,18 @@ def game(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp1
             if self.y >= SCREEN_HEIGHT - self.rect.height:
                 self.y = SCREEN_HEIGHT - self.rect.height
 
-            if player.x < self.x and self.x > player.x + 75:
+            if player.x + 25 < self.x and self.x > player.x + 75:
                 self.x = self.x - self.vel
-            if player.x > self.x and self.x < player.x + 75:
+            if player.x + 25 > self.x and self.x < player.x + 75:
                 self.x = self.x + self.vel
-            if player.y > self.y and self.y < player.y + 75:
+            if player.y + 25 > self.y and self.y < player.y + 75:
                 self.y = self.y + self.vel
-            if player.y < self.y and self.y > player.y + 75:
+            if player.y + 25 < self.y and self.y > player.y + 75:
                 self.y = self.y - self.vel
 
             #Checking if the enemy has touched the player
             nonlocal timePassed
-            if player.x <= self.x <= player.x + 90 and player.y <= self.y <= player.y + 90 and player.invincible == False:
+            if player.x + 10 <= self.x <= player.x + 90 and player.y + 10 <= self.y <= player.y + 90 and player.invincible == False:
                 timePassed = time.time()
                 player.invincible = True
                 player.HP = player.HP - 25
@@ -213,6 +208,55 @@ def game(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp1
             self.vel = 20
             self.x = x
             self.y = y
+
+        def update(self, pressed_keys, enemies):
+            if pressed_keys[K_RIGHT]:
+                if len(bullets) < 5 and len(bullets) > 0:
+                    for bullet in bullets:
+                        if bullet.x < SCREEN_WIDTH and bullet.x > 0:
+                            bullet.x = bullet.x + 1
+                            for enemy in enemies:
+                                if enemy.x <= bullet.x <= enemy.x + 100 and enemy.y <= bullet.y <= enemy.y + 100:
+                                    enemy.HP = enemy.HP - bullet.damage
+                            screen.blit(bullet.image, (bullet.x, bullet.y))
+                        else:
+                            bullets.pop(bullets.index(bullet))
+            
+            if pressed_keys[K_LEFT]:
+                if len(bullets) < 5 and len(bullets) > 0:
+                    for bullet in bullets:
+                        if bullet.x < SCREEN_WIDTH and bullet.x > 0:
+                            bullet.x = bullet.x - 1
+                            for enemy in enemies:
+                                if enemy.x <= bullet.x <= enemy.x + 100 and enemy.y <= bullet.y <= enemy.y + 100:
+                                    enemy.HP = enemy.HP - bullet.damage
+                            screen.blit(bullet.image, (bullet.x, bullet.y))
+                        else:
+                            bullets.pop(bullets.index(bullet))
+            
+            if pressed_keys[K_UP]:
+                if len(bullets) < 5 and len(bullets) > 0: 
+                    for bullet in bullets:
+                        if bullet.y < SCREEN_HEIGHT and bullet.y > 0:
+                            bullet.y = bullet.y - 1
+                            for enemy in enemies:
+                                if enemy.x <= bullet.x <= enemy.x + 100 and enemy.y <= bullet.y <= enemy.y + 100:
+                                    enemy.HP = enemy.HP - bullet.damage
+                            screen.blit(bullet.image, (bullet.x, bullet.y))
+                        else:
+                            bullets.pop(bullets.index(bullet))
+
+            if pressed_keys[K_DOWN]:
+                if len(bullets) < 5 and len(bullets) > 0:
+                    for bullet in bullets:
+                        if bullet.y < SCREEN_HEIGHT and bullet.y > 0:
+                            bullet.y = bullet.y + 1
+                            for enemy in enemies:
+                                if enemy.x <= bullet.x <= enemy.x + 100 and enemy.y <= bullet.y <= enemy.y + 100:
+                                    enemy.HP = enemy.HP - bullet.damage
+                            screen.blit(bullet.image, (bullet.x, bullet.y))
+                        else:
+                            bullets.pop(bullets.index(bullet))
             
 
     # Main programing
@@ -246,6 +290,8 @@ def game(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp1
             coins = coins + 20 * enemiesKilled
             menu(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp100, Speedp025, Speedp050, Speedp075, Speedp1)
 
+        textHP = smallfont.render(f"{player.HP}", True, BLACK)
+
         drawOnScreeN()
         
         pressed_keys = pygame.key.get_pressed()
@@ -253,7 +299,11 @@ def game(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp1
         player.update(pressed_keys)
 
         for enemy in enemies:
+            if enemy.HP == 0:
+                enemies.pop(enemies.index(enemy))
             enemy.update(player)
+
+        workingWithBullets(player, pressed_keys, enemies)
 
 
 def updates(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp100, Speedp025, Speedp050, Speedp075, Speedp1):
@@ -267,7 +317,7 @@ def updates(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, H
 
     bigfont = pygame.font.SysFont(None, 70)
 
-    textCoins = bigfont.render(f"Coins: {coins}", True, BLACK)
+    
 
     textUpgrades = smallfont.render("Updates", True, BLACK)
 
@@ -326,6 +376,7 @@ def updates(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, H
     pygame.display.set_caption("Bullet Bonanza")
     running = True
     while running:
+        textCoins = bigfont.render(f"Coins: {coins}", True, BLACK)
         clock.tick(FPS)
         screen.fill(CYAN)
         pygame.draw.rect(screen, BLACK, [SCREEN_WIDTH / 2 - 140 + 50, SCREEN_HEIGHT - 60, 140, 40])
