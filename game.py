@@ -36,6 +36,7 @@ def game(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp1
     startSpawn = True
     timePassed = 0
     smallfont = pygame.font.SysFont(None, 35)
+    timeBetweenBullets = 0
     # Functions
 
     # Drawin on the screen
@@ -53,26 +54,24 @@ def game(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp1
             enemies.append(Enemy(SCREEN_WIDTH / 2, SCREEN_HEIGHT - 101))
         for enemy in enemies:
             screen.blit(enemy.image, (enemy.x, enemy.y))
-        if HPp25 == False:
-            pygame.draw.rect(screen, RED, [20, 10, 200, 30])
-            if player.HP == 200:
-                pygame.draw.rect(screen, GREEN, [20, 10, 200, 30])
-            if player.HP == 175:
-                pygame.draw.rect(screen, GREEN, [20, 10, 200, 30])
-            if player.HP == 150:
-                pygame.draw.rect(screen, GREEN, [20, 10, 200, 30])
-            if player.HP == 125:
-                pygame.draw.rect(screen, GREEN, [20, 10, 200, 30])
-            if player.HP == 100:
-                pygame.draw.rect(screen, GREEN, [20, 10, 200, 30])
-            if player.HP == 75:
-                pygame.draw.rect(screen, GREEN, [20, 10, 150, 30])
-            if player.HP == 50:
-                pygame.draw.rect(screen, GREEN, [20, 10, 100, 30])
-            if player.HP == 25:
-                pygame.draw.rect(screen, GREEN, [20, 10, 50, 30])
-            screen.blit(textHP, (100 - 5, 15))
-        pygame.display.update()
+        pygame.draw.rect(screen, RED, [20, 10, 200, 30])
+        if player.HP == 200:
+            pygame.draw.rect(screen, GREEN, [20, 10, 200, 30])
+        if player.HP == 175:
+            pygame.draw.rect(screen, GREEN, [20, 10, 200, 30])
+        if player.HP == 150:
+            pygame.draw.rect(screen, GREEN, [20, 10, 200, 30])
+        if player.HP == 125:
+            pygame.draw.rect(screen, GREEN, [20, 10, 200, 30])
+        if player.HP == 100:
+            pygame.draw.rect(screen, GREEN, [20, 10, 200, 30])
+        if player.HP == 75:
+            pygame.draw.rect(screen, GREEN, [20, 10, 150, 30])
+        if player.HP == 50:
+            pygame.draw.rect(screen, GREEN, [20, 10, 100, 30])
+        if player.HP == 25:
+            pygame.draw.rect(screen, GREEN, [20, 10, 50, 30])
+        screen.blit(textHP, (100 - 5, 15))
 
     def workingWithBullets(player, pressed_keys, enemies):
         if pressed_keys[K_RIGHT]:
@@ -84,9 +83,7 @@ def game(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp1
         if pressed_keys[K_DOWN]:
             bullets.append(Bullet(player.x, player.y))
         for bullet in bullets:
-            bullet.update(pressed_keys, enemies)
-        
-        
+            bullet.update(pressed_keys, enemies, bullet)
 
     # Classes
 
@@ -178,7 +175,7 @@ def game(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp1
 
             #Checking if the enemy has touched the player
             nonlocal timePassed
-            if player.x + 10 <= self.x <= player.x + 90 and player.y + 10 <= self.y <= player.y + 90 and player.invincible == False:
+            if player.x <= self.x <= player.x + 90 and player.y <= self.y <= player.y + 90 and player.invincible == False:
                 timePassed = time.time()
                 player.invincible = True
                 player.HP = player.HP - 25
@@ -205,58 +202,73 @@ def game(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp1
                 self.image = pygame.transform.scale(pygame.image.load(os.path.join("Assets", "Rocket.png")), (50, 50))
                 self.rect = self.image.get_rect()
                 self.damage = 100
-            self.vel = 20
+            self.vel = 15
             self.x = x
             self.y = y
 
-        def update(self, pressed_keys, enemies):
+        def update(self, pressed_keys, enemies, bullet):
+            nonlocal timeBetweenBullets
+            bullets_to_remove = []
             if pressed_keys[K_RIGHT]:
-                if len(bullets) < 5 and len(bullets) > 0:
-                    for bullet in bullets:
+                if timeBetweenBullets + 1 < time.time():
+                    timeBetweenBullets = time.time()
+                    if len(bullets) < 5 and len(bullets) > 0:
                         if bullet.x < SCREEN_WIDTH and bullet.x > 0:
-                            bullet.x = bullet.x + 1
+                            bullet.x = bullet.x + self.vel
                             for enemy in enemies:
                                 if enemy.x <= bullet.x <= enemy.x + 100 and enemy.y <= bullet.y <= enemy.y + 100:
                                     enemy.HP = enemy.HP - bullet.damage
                             screen.blit(bullet.image, (bullet.x, bullet.y))
                         else:
-                            bullets.pop(bullets.index(bullet))
+                            bullets_to_remove.append(bullet)
             
             if pressed_keys[K_LEFT]:
-                if len(bullets) < 5 and len(bullets) > 0:
-                    for bullet in bullets:
+                if timeBetweenBullets + 1 < time.time():
+                    timeBetweenBullets = time.time()
+                    if len(bullets) < 5 and len(bullets) > 0:
                         if bullet.x < SCREEN_WIDTH and bullet.x > 0:
-                            bullet.x = bullet.x - 1
+                            bullet.x = bullet.x - self.vel
+                            if AK47bought == True and Wandbought == False or Bazookabought == True:
+                                bullet.image = pygame.transform.rotate(bullet.image, 180)
                             for enemy in enemies:
                                 if enemy.x <= bullet.x <= enemy.x + 100 and enemy.y <= bullet.y <= enemy.y + 100:
                                     enemy.HP = enemy.HP - bullet.damage
                             screen.blit(bullet.image, (bullet.x, bullet.y))
                         else:
-                            bullets.pop(bullets.index(bullet))
+                            bullets_to_remove.append(bullet)
             
             if pressed_keys[K_UP]:
-                if len(bullets) < 5 and len(bullets) > 0: 
-                    for bullet in bullets:
+                if timeBetweenBullets + 1 < time.time():
+                    timeBetweenBullets = time.time()
+                    if len(bullets) < 5 and len(bullets) > 0: 
                         if bullet.y < SCREEN_HEIGHT and bullet.y > 0:
-                            bullet.y = bullet.y - 1
+                            bullet.y = bullet.y - self.vel
+                            if AK47bought == True and Wandbought == False or Bazookabought == True:
+                                bullet.image = pygame.transform.rotate(bullet.image, 90)
                             for enemy in enemies:
                                 if enemy.x <= bullet.x <= enemy.x + 100 and enemy.y <= bullet.y <= enemy.y + 100:
                                     enemy.HP = enemy.HP - bullet.damage
                             screen.blit(bullet.image, (bullet.x, bullet.y))
                         else:
-                            bullets.pop(bullets.index(bullet))
+                            bullets_to_remove.append(bullet)
 
             if pressed_keys[K_DOWN]:
-                if len(bullets) < 5 and len(bullets) > 0:
-                    for bullet in bullets:
+                if timeBetweenBullets + 1 < time.time():
+                    timeBetweenBullets = time.time()
+                    if len(bullets) < 5 and len(bullets) > 0:
                         if bullet.y < SCREEN_HEIGHT and bullet.y > 0:
-                            bullet.y = bullet.y + 1
+                            bullet.y = bullet.y + self.vel
+                            if AK47bought == True and Wandbought == False or Bazookabought == True:
+                                bullet.image = pygame.transform.rotate(bullet.image, 270)
                             for enemy in enemies:
                                 if enemy.x <= bullet.x <= enemy.x + 100 and enemy.y <= bullet.y <= enemy.y + 100:
                                     enemy.HP = enemy.HP - bullet.damage
                             screen.blit(bullet.image, (bullet.x, bullet.y))
                         else:
-                            bullets.pop(bullets.index(bullet))
+                            bullets_to_remove.append(bullet)
+            
+            for bullet in bullets_to_remove:
+                bullets.remove(bullet)
             
 
     # Main programing
@@ -304,6 +316,8 @@ def game(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp1
             enemy.update(player)
 
         workingWithBullets(player, pressed_keys, enemies)
+
+        pygame.display.update()
 
 
 def updates(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp100, Speedp025, Speedp050, Speedp075, Speedp1):
