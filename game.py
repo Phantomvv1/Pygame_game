@@ -269,6 +269,8 @@ def game(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp1
             
             for bullet in bullets_to_remove:
                 bullets.remove(bullet)
+            for bullet in bullets_to_remove:
+                bullets_to_remove.pop(bullets_to_remove.index(bullet))
             
 
     # Main programing
@@ -313,6 +315,7 @@ def game(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp1
         for enemy in enemies:
             if enemy.HP == 0:
                 enemies.pop(enemies.index(enemy))
+                enemiesKilled = enemiesKilled + 1
             enemy.update(player)
 
         workingWithBullets(player, pressed_keys, enemies)
@@ -330,8 +333,6 @@ def updates(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, H
     smallfont = pygame.font.SysFont(None, 35)
 
     bigfont = pygame.font.SysFont(None, 70)
-
-    
 
     textUpgrades = smallfont.render("Updates", True, BLACK)
 
@@ -551,14 +552,12 @@ def menu(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp1
         mouse = pygame.mouse.get_pos()
 
         for event in pygame.event.get(): 
-            if event.type == KEYDOWN:
-                if event.key == K_ESCAPE:
-                    running = False
-            elif event.type == QUIT:
+            if event.type == QUIT:
                 running = False
 
             if event.type == MOUSEBUTTONDOWN:
-                if SCREEN_WIDTH / 2 - 140 + 50 <= mouse[0] <= SCREEN_WIDTH / 2 + 50 and SCREEN_HEIGHT / 2 + 50 <= mouse[1] <= SCREEN_HEIGHT / 2 + 40 + 50: 
+                if SCREEN_WIDTH / 2 - 140 + 50 <= mouse[0] <= SCREEN_WIDTH / 2 + 50 and SCREEN_HEIGHT / 2 + 50 <= mouse[1] <= SCREEN_HEIGHT / 2 + 40 + 50:
+                    writeFile(coins, AK47bought, Wandbought, Bazookabought, HPp25, HPp50, HPp75, HPp100, Speedp025, Speedp050, Speedp075, Speedp1)
                     running = False
                 if SCREEN_WIDTH / 2 - 140 + 50 <= mouse[0] <= SCREEN_WIDTH / 2 + 50 and SCREEN_HEIGHT / 2 <= mouse[1] <= SCREEN_HEIGHT / 2 + 40:
                     running = False
